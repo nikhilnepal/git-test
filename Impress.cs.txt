@@ -1,0 +1,806 @@
+/** 
+2  * impress.js 
+3  * 
+4  * impress.js is a presentation tool based on the power of CSS3 transforms and transitions 
+5  * in modern browsers and inspired by the idea behind prezi.com. 
+6  * 
+7  * 
+8  * Copyright 2011-2012 Bartek Szopka (@bartaz) 
+9  * 
+10  * Released under the MIT and GPL Licenses. 
+11  * 
+12  * ------------------------------------------------ 
+13  *  author:  Bartek Szopka 
+14  *  version: 0.5.3 
+15  *  url:     http://bartaz.github.com/impress.js/ 
+16  *  source:  http://github.com/bartaz/impress.js/ 
+17  */ 
+18 
+ 
+19 /*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, latedef:true, newcap:true, 
+20          noarg:true, noempty:true, undef:true, strict:true, browser:true */ 
+21 
+ 
+22 // You are one of those who like to know how things work inside? 
+23 // Let me show you the cogs that make impress.js run... 
+24 (function ( document, window ) { 
+25     'use strict'; 
+26      
+27     // HELPER FUNCTIONS 
+28      
+29     // `pfx` is a function that takes a standard CSS property name as a parameter 
+30     // and returns it's prefixed version valid for current browser it runs in. 
+31     // The code is heavily inspired by Modernizr http://www.modernizr.com/ 
+32     var pfx = (function () { 
+33          
+34         var style = document.createElement('dummy').style, 
+35             prefixes = 'Webkit Moz O ms Khtml'.split(' '), 
+36             memory = {}; 
+37          
+38         return function ( prop ) { 
+39             if ( typeof memory[ prop ] === "undefined" ) { 
+40                  
+41                 var ucProp  = prop.charAt(0).toUpperCase() + prop.substr(1), 
+42                     props   = (prop + ' ' + prefixes.join(ucProp + ' ') + ucProp).split(' '); 
+43                  
+44                 memory[ prop ] = null; 
+45                 for ( var i in props ) { 
+46                     if ( style[ props[i] ] !== undefined ) { 
+47                         memory[ prop ] = props[i]; 
+48                         break; 
+49                     } 
+50                 } 
+51              
+52             } 
+53              
+54             return memory[ prop ]; 
+55         }; 
+56      
+57     })(); 
+58      
+59     // `arraify` takes an array-like object and turns it into real Array 
+60     // to make all the Array.prototype goodness available. 
+61     var arrayify = function ( a ) { 
+62         return [].slice.call( a ); 
+63     }; 
+64      
+65     // `css` function applies the styles given in `props` object to the element 
+66     // given as `el`. It runs all property names through `pfx` function to make 
+67     // sure proper prefixed version of the property is used. 
+68     var css = function ( el, props ) { 
+69         var key, pkey; 
+70         for ( key in props ) { 
+71             if ( props.hasOwnProperty(key) ) { 
+72                 pkey = pfx(key); 
+73                 if ( pkey !== null ) { 
+74                     el.style[pkey] = props[key]; 
+75                 } 
+76             } 
+77         } 
+78         return el; 
+79     }; 
+80      
+81     // `toNumber` takes a value given as `numeric` parameter and tries to turn 
+82     // it into a number. If it is not possible it returns 0 (or other value 
+83     // given as `fallback`). 
+84     var toNumber = function (numeric, fallback) { 
+85         return isNaN(numeric) ? (fallback || 0) : Number(numeric); 
+86     }; 
+87      
+88     // `byId` returns element with given `id` - you probably have guessed that ;) 
+89     var byId = function ( id ) { 
+90         return document.getElementById(id); 
+91     }; 
+92      
+93     // `$` returns first element for given CSS `selector` in the `context` of 
+94     // the given element or whole document. 
+95     var $ = function ( selector, context ) { 
+96         context = context || document; 
+97         return context.querySelector(selector); 
+98     }; 
+99      
+100     // `$$` return an array of elements for given CSS `selector` in the `context` of 
+101     // the given element or whole document. 
+102     var $$ = function ( selector, context ) { 
+103         context = context || document; 
+104         return arrayify( context.querySelectorAll(selector) ); 
+105     }; 
+106      
+107     // `triggerEvent` builds a custom DOM event with given `eventName` and `detail` data 
+108     // and triggers it on element given as `el`. 
+109     var triggerEvent = function (el, eventName, detail) { 
+110         var event = document.createEvent("CustomEvent"); 
+111         event.initCustomEvent(eventName, true, true, detail); 
+112         el.dispatchEvent(event); 
+113     }; 
+114      
+115     // `translate` builds a translate transform string for given data. 
+116     var translate = function ( t ) { 
+117         return " translate3d(" + t.x + "px," + t.y + "px," + t.z + "px) "; 
+118     }; 
+119      
+120     // `rotate` builds a rotate transform string for given data. 
+121     // By default the rotations are in X Y Z order that can be reverted by passing `true` 
+122     // as second parameter. 
+123     var rotate = function ( r, revert ) { 
+124         var rX = " rotateX(" + r.x + "deg) ", 
+125             rY = " rotateY(" + r.y + "deg) ", 
+126             rZ = " rotateZ(" + r.z + "deg) "; 
+127          
+128         return revert ? rZ+rY+rX : rX+rY+rZ; 
+129     }; 
+130      
+131     // `scale` builds a scale transform string for given data. 
+132     var scale = function ( s ) { 
+133         return " scale(" + s + ") "; 
+134     }; 
+135      
+136     // `perspective` builds a perspective transform string for given data. 
+137     var perspective = function ( p ) { 
+138         return " perspective(" + p + "px) "; 
+139     }; 
+140      
+141     // `getElementFromHash` returns an element located by id from hash part of 
+142     // window location. 
+143     var getElementFromHash = function () { 
+144         // get id from url # by removing `#` or `#/` from the beginning, 
+145         // so both "fallback" `#slide-id` and "enhanced" `#/slide-id` will work 
+146         return byId( window.location.hash.replace(/^#\/?/,"") ); 
+147     }; 
+148      
+149     // `computeWindowScale` counts the scale factor between window size and size 
+150     // defined for the presentation in the config. 
+151     var computeWindowScale = function ( config ) { 
+152         var hScale = window.innerHeight / config.height, 
+153             wScale = window.innerWidth / config.width, 
+154             scale = hScale > wScale ? wScale : hScale; 
+155          
+156         if (config.maxScale && scale > config.maxScale) { 
+157             scale = config.maxScale; 
+158         } 
+159          
+160         if (config.minScale && scale < config.minScale) { 
+161             scale = config.minScale; 
+162         } 
+163          
+164         return scale; 
+165     }; 
+166      
+167     // CHECK SUPPORT 
+168     var body = document.body; 
+169      
+170     var ua = navigator.userAgent.toLowerCase(); 
+171     var impressSupported =  
+172                           // browser should support CSS 3D transtorms  
+173                            ( pfx("perspective") !== null ) && 
+174                             
+175                           // and `classList` and `dataset` APIs 
+176                            ( body.classList ) && 
+177                            ( body.dataset ) && 
+178                             
+179                           // but some mobile devices need to be blacklisted, 
+180                           // because their CSS 3D support or hardware is not 
+181                           // good enough to run impress.js properly, sorry... 
+182                            ( ua.search(/(iphone)|(ipod)|(android)/) === -1 ); 
+183      
+184     if (!impressSupported) { 
+185         // we can't be sure that `classList` is supported 
+186         body.className += " impress-not-supported "; 
+187     } else { 
+188         body.classList.remove("impress-not-supported"); 
+189         body.classList.add("impress-supported"); 
+190     } 
+191      
+192     // GLOBALS AND DEFAULTS 
+193      
+194     // This is where the root elements of all impress.js instances will be kept. 
+195     // Yes, this means you can have more than one instance on a page, but I'm not 
+196     // sure if it makes any sense in practice ;) 
+197     var roots = {}; 
+198      
+199     // some default config values. 
+200     var defaults = { 
+201         width: 1024, 
+202         height: 768, 
+203         maxScale: 1, 
+204         minScale: 0, 
+205          
+206         perspective: 1000, 
+207          
+208         transitionDuration: 1000 
+209     }; 
+210      
+211     // it's just an empty function ... and a useless comment. 
+212     var empty = function () { return false; }; 
+213      
+214     // IMPRESS.JS API 
+215      
+216     // And that's where interesting things will start to happen. 
+217     // It's the core `impress` function that returns the impress.js API 
+218     // for a presentation based on the element with given id ('impress' 
+219     // by default). 
+220     var impress = window.impress = function ( rootId ) { 
+221          
+222         // If impress.js is not supported by the browser return a dummy API 
+223         // it may not be a perfect solution but we return early and avoid 
+224         // running code that may use features not implemented in the browser. 
+225         if (!impressSupported) { 
+226             return { 
+227                 init: empty, 
+228                 goto: empty, 
+229                 prev: empty, 
+230                 next: empty 
+231             }; 
+232         } 
+233          
+234         rootId = rootId || "impress"; 
+235          
+236         // if given root is already initialized just return the API 
+237         if (roots["impress-root-" + rootId]) { 
+238             return roots["impress-root-" + rootId]; 
+239         } 
+240          
+241         // data of all presentation steps 
+242         var stepsData = {}; 
+243          
+244         // element of currently active step 
+245         var activeStep = null; 
+246          
+247         // current state (position, rotation and scale) of the presentation 
+248         var currentState = null; 
+249          
+250         // array of step elements 
+251         var steps = null; 
+252          
+253         // configuration options 
+254         var config = null; 
+255          
+256         // scale factor of the browser window 
+257         var windowScale = null;         
+258          
+259         // root presentation elements 
+260         var root = byId( rootId ); 
+261         var canvas = document.createElement("div"); 
+262          
+263         var initialized = false; 
+264          
+265         // STEP EVENTS 
+266         // 
+267         // There are currently two step events triggered by impress.js 
+268         // `impress:stepenter` is triggered when the step is shown on the  
+269         // screen (the transition from the previous one is finished) and 
+270         // `impress:stepleave` is triggered when the step is left (the 
+271         // transition to next step just starts). 
+272          
+273         // reference to last entered step 
+274         var lastEntered = null; 
+275          
+276         // `onStepEnter` is called whenever the step element is entered 
+277         // but the event is triggered only if the step is different than 
+278         // last entered step. 
+279         var onStepEnter = function (step) { 
+280             if (lastEntered !== step) { 
+281                 triggerEvent(step, "impress:stepenter"); 
+282                 lastEntered = step; 
+283             } 
+284         }; 
+285          
+286         // `onStepLeave` is called whenever the step element is left 
+287         // but the event is triggered only if the step is the same as 
+288         // last entered step. 
+289         var onStepLeave = function (step) { 
+290             if (lastEntered === step) { 
+291                 triggerEvent(step, "impress:stepleave"); 
+292                 lastEntered = null; 
+293             } 
+294         }; 
+295          
+296         // `initStep` initializes given step element by reading data from its 
+297         // data attributes and setting correct styles. 
+298         var initStep = function ( el, idx ) { 
+299             var data = el.dataset, 
+300                 step = { 
+301                     translate: { 
+302                         x: toNumber(data.x), 
+303                         y: toNumber(data.y), 
+304                         z: toNumber(data.z) 
+305                     }, 
+306                     rotate: { 
+307                         x: toNumber(data.rotateX), 
+308                         y: toNumber(data.rotateY), 
+309                         z: toNumber(data.rotateZ || data.rotate) 
+310                     }, 
+311                     scale: toNumber(data.scale, 1), 
+312                     el: el 
+313                 }; 
+314              
+315             if ( !el.id ) { 
+316                 el.id = "step-" + (idx + 1); 
+317             } 
+318              
+319             stepsData["impress-" + el.id] = step; 
+320              
+321             css(el, { 
+322                 position: "absolute", 
+323                 transform: "translate(-50%,-50%)" + 
+324                            translate(step.translate) + 
+325                            rotate(step.rotate) + 
+326                            scale(step.scale), 
+327                 transformStyle: "preserve-3d" 
+328             }); 
+329         }; 
+330          
+331         // `init` API function that initializes (and runs) the presentation. 
+332         var init = function () { 
+333             if (initialized) { return; } 
+334              
+335             // First we set up the viewport for mobile devices. 
+336             // For some reason iPad goes nuts when it is not done properly. 
+337             var meta = $("meta[name='viewport']") || document.createElement("meta"); 
+338             meta.content = "width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no"; 
+339             if (meta.parentNode !== document.head) { 
+340                 meta.name = 'viewport'; 
+341                 document.head.appendChild(meta); 
+342             } 
+343              
+344             // initialize configuration object 
+345             var rootData = root.dataset; 
+346             config = { 
+347                 width: toNumber( rootData.width, defaults.width ), 
+348                 height: toNumber( rootData.height, defaults.height ), 
+349                 maxScale: toNumber( rootData.maxScale, defaults.maxScale ), 
+350                 minScale: toNumber( rootData.minScale, defaults.minScale ),                 
+351                 perspective: toNumber( rootData.perspective, defaults.perspective ), 
+352                 transitionDuration: toNumber( rootData.transitionDuration, defaults.transitionDuration ) 
+353             }; 
+354              
+355             windowScale = computeWindowScale( config ); 
+356              
+357             // wrap steps with "canvas" element 
+358             arrayify( root.childNodes ).forEach(function ( el ) { 
+359                 canvas.appendChild( el ); 
+360             }); 
+361             root.appendChild(canvas); 
+362              
+363             // set initial styles 
+364             document.documentElement.style.height = "100%"; 
+365              
+366             css(body, { 
+367                 height: "100%", 
+368                 overflow: "hidden" 
+369             }); 
+370              
+371             var rootStyles = { 
+372                 position: "absolute", 
+373                 transformOrigin: "top left", 
+374                 transition: "all 0s ease-in-out", 
+375                 transformStyle: "preserve-3d" 
+376             }; 
+377              
+378             css(root, rootStyles); 
+379             css(root, { 
+380                 top: "50%", 
+381                 left: "50%", 
+382                 transform: perspective( config.perspective/windowScale ) + scale( windowScale ) 
+383             }); 
+384             css(canvas, rootStyles); 
+385              
+386             body.classList.remove("impress-disabled"); 
+387             body.classList.add("impress-enabled"); 
+388              
+389             // get and init steps 
+390             steps = $$(".step", root); 
+391             steps.forEach( initStep ); 
+392              
+393             // set a default initial state of the canvas 
+394             currentState = { 
+395                 translate: { x: 0, y: 0, z: 0 }, 
+396                 rotate:    { x: 0, y: 0, z: 0 }, 
+397                 scale:     1 
+398             }; 
+399              
+400             initialized = true; 
+401              
+402             triggerEvent(root, "impress:init", { api: roots[ "impress-root-" + rootId ] }); 
+403         }; 
+404          
+405         // `getStep` is a helper function that returns a step element defined by parameter. 
+406         // If a number is given, step with index given by the number is returned, if a string 
+407         // is given step element with such id is returned, if DOM element is given it is returned 
+408         // if it is a correct step element. 
+409         var getStep = function ( step ) { 
+410             if (typeof step === "number") { 
+411                 step = step < 0 ? steps[ steps.length + step] : steps[ step ]; 
+412             } else if (typeof step === "string") { 
+413                 step = byId(step); 
+414             } 
+415             return (step && step.id && stepsData["impress-" + step.id]) ? step : null; 
+416         }; 
+417          
+418         // used to reset timeout for `impress:stepenter` event 
+419         var stepEnterTimeout = null; 
+420          
+421         // `goto` API function that moves to step given with `el` parameter (by index, id or element), 
+422         // with a transition `duration` optionally given as second parameter. 
+423         var goto = function ( el, duration ) { 
+424              
+425             if ( !initialized || !(el = getStep(el)) ) { 
+426                 // presentation not initialized or given element is not a step 
+427                 return false; 
+428             } 
+429              
+430             // Sometimes it's possible to trigger focus on first link with some keyboard action. 
+431             // Browser in such a case tries to scroll the page to make this element visible 
+432             // (even that body overflow is set to hidden) and it breaks our careful positioning. 
+433             // 
+434             // So, as a lousy (and lazy) workaround we will make the page scroll back to the top 
+435             // whenever slide is selected 
+436             // 
+437             // If you are reading this and know any better way to handle it, I'll be glad to hear about it! 
+438             window.scrollTo(0, 0); 
+439              
+440             var step = stepsData["impress-" + el.id]; 
+441              
+442             if ( activeStep ) { 
+443                 activeStep.classList.remove("active"); 
+444                 body.classList.remove("impress-on-" + activeStep.id); 
+445             } 
+446             el.classList.add("active"); 
+447              
+448             body.classList.add("impress-on-" + el.id); 
+449              
+450             // compute target state of the canvas based on given step 
+451             var target = { 
+452                 rotate: { 
+453                     x: -step.rotate.x, 
+454                     y: -step.rotate.y, 
+455                     z: -step.rotate.z 
+456                 }, 
+457                 translate: { 
+458                     x: -step.translate.x, 
+459                     y: -step.translate.y, 
+460                     z: -step.translate.z 
+461                 }, 
+462                 scale: 1 / step.scale 
+463             }; 
+464              
+465             // Check if the transition is zooming in or not. 
+466             // 
+467             // This information is used to alter the transition style: 
+468             // when we are zooming in - we start with move and rotate transition 
+469             // and the scaling is delayed, but when we are zooming out we start 
+470             // with scaling down and move and rotation are delayed. 
+471             var zoomin = target.scale >= currentState.scale; 
+472              
+473             duration = toNumber(duration, config.transitionDuration); 
+474             var delay = (duration / 2); 
+475              
+476             // if the same step is re-selected, force computing window scaling, 
+477             // because it is likely to be caused by window resize 
+478             if (el === activeStep) { 
+479                 windowScale = computeWindowScale(config); 
+480             } 
+481              
+482             var targetScale = target.scale * windowScale; 
+483              
+484             // trigger leave of currently active element (if it's not the same step again) 
+485             if (activeStep && activeStep !== el) { 
+486                 onStepLeave(activeStep); 
+487             } 
+488              
+489             // Now we alter transforms of `root` and `canvas` to trigger transitions. 
+490             // 
+491             // And here is why there are two elements: `root` and `canvas` - they are 
+492             // being animated separately: 
+493             // `root` is used for scaling and `canvas` for translate and rotations. 
+494             // Transitions on them are triggered with different delays (to make 
+495             // visually nice and 'natural' looking transitions), so we need to know 
+496             // that both of them are finished. 
+497             css(root, { 
+498                 // to keep the perspective look similar for different scales 
+499                 // we need to 'scale' the perspective, too 
+500                 transform: perspective( config.perspective / targetScale ) + scale( targetScale ), 
+501                 transitionDuration: duration + "ms", 
+502                 transitionDelay: (zoomin ? delay : 0) + "ms" 
+503             }); 
+504              
+505             css(canvas, { 
+506                 transform: rotate(target.rotate, true) + translate(target.translate), 
+507                 transitionDuration: duration + "ms", 
+508                 transitionDelay: (zoomin ? 0 : delay) + "ms" 
+509             }); 
+510              
+511             // Here is a tricky part... 
+512             // 
+513             // If there is no change in scale or no change in rotation and translation, it means there was actually 
+514             // no delay - because there was no transition on `root` or `canvas` elements. 
+515             // We want to trigger `impress:stepenter` event in the correct moment, so here we compare the current 
+516             // and target values to check if delay should be taken into account. 
+517             // 
+518             // I know that this `if` statement looks scary, but it's pretty simple when you know what is going on 
+519             // - it's simply comparing all the values. 
+520             if ( currentState.scale === target.scale || 
+521                 (currentState.rotate.x === target.rotate.x && currentState.rotate.y === target.rotate.y && 
+522                  currentState.rotate.z === target.rotate.z && currentState.translate.x === target.translate.x && 
+523                  currentState.translate.y === target.translate.y && currentState.translate.z === target.translate.z) ) { 
+524                 delay = 0; 
+525             } 
+526              
+527             // store current state 
+528             currentState = target; 
+529             activeStep = el; 
+530              
+531             // And here is where we trigger `impress:stepenter` event. 
+532             // We simply set up a timeout to fire it taking transition duration (and possible delay) into account. 
+533             // 
+534             // I really wanted to make it in more elegant way. The `transitionend` event seemed to be the best way 
+535             // to do it, but the fact that I'm using transitions on two separate elements and that the `transitionend` 
+536             // event is only triggered when there was a transition (change in the values) caused some bugs and  
+537             // made the code really complicated, cause I had to handle all the conditions separately. And it still 
+538             // needed a `setTimeout` fallback for the situations when there is no transition at all. 
+539             // So I decided that I'd rather make the code simpler than use shiny new `transitionend`. 
+540             // 
+541             // If you want learn something interesting and see how it was done with `transitionend` go back to 
+542             // version 0.5.2 of impress.js: http://github.com/bartaz/impress.js/blob/0.5.2/js/impress.js 
+543             window.clearTimeout(stepEnterTimeout); 
+544             stepEnterTimeout = window.setTimeout(function() { 
+545                 onStepEnter(activeStep); 
+546             }, duration + delay); 
+547              
+548             return el; 
+549         }; 
+550          
+551         // `prev` API function goes to previous step (in document order) 
+552         var prev = function () { 
+553             var prev = steps.indexOf( activeStep ) - 1; 
+554             prev = prev >= 0 ? steps[ prev ] : steps[ steps.length-1 ]; 
+555              
+556             return goto(prev); 
+557         }; 
+558          
+559         // `next` API function goes to next step (in document order) 
+560         var next = function () { 
+561             var next = steps.indexOf( activeStep ) + 1; 
+562             next = next < steps.length ? steps[ next ] : steps[ 0 ]; 
+563              
+564             return goto(next); 
+565         }; 
+566          
+567         // Adding some useful classes to step elements. 
+568         // 
+569         // All the steps that have not been shown yet are given `future` class. 
+570         // When the step is entered the `future` class is removed and the `present` 
+571         // class is given. When the step is left `present` class is replaced with 
+572         // `past` class. 
+573         // 
+574         // So every step element is always in one of three possible states: 
+575         // `future`, `present` and `past`. 
+576         // 
+577         // There classes can be used in CSS to style different types of steps. 
+578         // For example the `present` class can be used to trigger some custom 
+579         // animations when step is shown. 
+580         root.addEventListener("impress:init", function(){ 
+581             // STEP CLASSES 
+582             steps.forEach(function (step) { 
+583                 step.classList.add("future"); 
+584             }); 
+585              
+586             root.addEventListener("impress:stepenter", function (event) { 
+587                 event.target.classList.remove("past"); 
+588                 event.target.classList.remove("future"); 
+589                 event.target.classList.add("present"); 
+590             }, false); 
+591              
+592             root.addEventListener("impress:stepleave", function (event) { 
+593                 event.target.classList.remove("present"); 
+594                 event.target.classList.add("past"); 
+595             }, false); 
+596              
+597         }, false); 
+598          
+599         // Adding hash change support. 
+600         root.addEventListener("impress:init", function(){ 
+601              
+602             // last hash detected 
+603             var lastHash = ""; 
+604              
+605             // `#/step-id` is used instead of `#step-id` to prevent default browser 
+606             // scrolling to element in hash. 
+607             // 
+608             // And it has to be set after animation finishes, because in Chrome it 
+609             // makes transtion laggy. 
+610             // BUG: http://code.google.com/p/chromium/issues/detail?id=62820 
+611             root.addEventListener("impress:stepenter", function (event) { 
+612                 window.location.hash = lastHash = "#/" + event.target.id; 
+613             }, false); 
+614              
+615             window.addEventListener("hashchange", function () { 
+616                 // When the step is entered hash in the location is updated 
+617                 // (just few lines above from here), so the hash change is  
+618                 // triggered and we would call `goto` again on the same element. 
+619                 // 
+620                 // To avoid this we store last entered hash and compare. 
+621                 if (window.location.hash !== lastHash) { 
+622                     goto( getElementFromHash() ); 
+623                 } 
+624             }, false); 
+625              
+626             // START  
+627             // by selecting step defined in url or first step of the presentation 
+628             goto(getElementFromHash() || steps[0], 0); 
+629         }, false); 
+630          
+631         body.classList.add("impress-disabled"); 
+632          
+633         // store and return API for given impress.js root element 
+634         return (roots[ "impress-root-" + rootId ] = { 
+635             init: init, 
+636             goto: goto, 
+637             next: next, 
+638             prev: prev 
+639         }); 
+640 
+ 
+641     }; 
+642      
+643     // flag that can be used in JS to check if browser have passed the support test 
+644     impress.supported = impressSupported; 
+645      
+646 })(document, window); 
+647 
+ 
+648 // NAVIGATION EVENTS 
+649 
+ 
+650 // As you can see this part is separate from the impress.js core code. 
+651 // It's because these navigation actions only need what impress.js provides with 
+652 // its simple API. 
+653 // 
+654 // In future I think about moving it to make them optional, move to separate files 
+655 // and treat more like a 'plugins'. 
+656 (function ( document, window ) { 
+657     'use strict'; 
+658      
+659     // throttling function calls, by Remy Sharp 
+660     // http://remysharp.com/2010/07/21/throttling-function-calls/ 
+661     var throttle = function (fn, delay) { 
+662         var timer = null; 
+663         return function () { 
+664             var context = this, args = arguments; 
+665             clearTimeout(timer); 
+666             timer = setTimeout(function () { 
+667                 fn.apply(context, args); 
+668             }, delay); 
+669         }; 
+670     }; 
+671      
+672     // wait for impress.js to be initialized 
+673     document.addEventListener("impress:init", function (event) { 
+674         // Getting API from event data. 
+675         // So you don't event need to know what is the id of the root element 
+676         // or anything. `impress:init` event data gives you everything you  
+677         // need to control the presentation that was just initialized. 
+678         var api = event.detail.api; 
+679          
+680         // KEYBOARD NAVIGATION HANDLERS 
+681          
+682         // Prevent default keydown action when one of supported key is pressed. 
+683         document.addEventListener("keydown", function ( event ) { 
+684             if ( event.keyCode === 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) { 
+685                 event.preventDefault(); 
+686             } 
+687         }, false); 
+688          
+689         // Trigger impress action (next or prev) on keyup. 
+690          
+691         // Supported keys are: 
+692         // [space] - quite common in presentation software to move forward 
+693         // [up] [right] / [down] [left] - again common and natural addition, 
+694         // [pgdown] / [pgup] - often triggered by remote controllers, 
+695         // [tab] - this one is quite controversial, but the reason it ended up on 
+696         //   this list is quite an interesting story... Remember that strange part 
+697         //   in the impress.js code where window is scrolled to 0,0 on every presentation 
+698         //   step, because sometimes browser scrolls viewport because of the focused element? 
+699         //   Well, the [tab] key by default navigates around focusable elements, so clicking 
+700         //   it very often caused scrolling to focused element and breaking impress.js 
+701         //   positioning. I didn't want to just prevent this default action, so I used [tab] 
+702         //   as another way to moving to next step... And yes, I know that for the sake of 
+703         //   consistency I should add [shift+tab] as opposite action... 
+704         document.addEventListener("keyup", function ( event ) { 
+705             if ( event.keyCode === 9 || ( event.keyCode >= 32 && event.keyCode <= 34 ) || (event.keyCode >= 37 && event.keyCode <= 40) ) { 
+706                 switch( event.keyCode ) { 
+707                     case 33: // pg up 
+708                     case 37: // left 
+709                     case 38: // up 
+710                              api.prev(); 
+711                              break; 
+712                     case 9:  // tab 
+713                     case 32: // space 
+714                     case 34: // pg down 
+715                     case 39: // right 
+716                     case 40: // down 
+717                              api.next(); 
+718                              break; 
+719                 } 
+720                  
+721                 event.preventDefault(); 
+722             } 
+723         }, false); 
+724          
+725         // delegated handler for clicking on the links to presentation steps 
+726         document.addEventListener("click", function ( event ) { 
+727             // event delegation with "bubbling" 
+728             // check if event target (or any of its parents is a link) 
+729             var target = event.target; 
+730             while ( (target.tagName !== "A") && 
+731                     (target !== document.documentElement) ) { 
+732                 target = target.parentNode; 
+733             } 
+734              
+735             if ( target.tagName === "A" ) { 
+736                 var href = target.getAttribute("href"); 
+737                  
+738                 // if it's a link to presentation step, target this step 
+739                 if ( href && href[0] === '#' ) { 
+740                     target = document.getElementById( href.slice(1) ); 
+741                 } 
+742             } 
+743              
+744             if ( api.goto(target) ) { 
+745                 event.stopImmediatePropagation(); 
+746                 event.preventDefault(); 
+747             } 
+748         }, false); 
+749          
+750         // delegated handler for clicking on step elements 
+751         document.addEventListener("click", function ( event ) { 
+752             var target = event.target; 
+753             // find closest step element that is not active 
+754             while ( !(target.classList.contains("step") && !target.classList.contains("active")) && 
+755                     (target !== document.documentElement) ) { 
+756                 target = target.parentNode; 
+757             } 
+758              
+759             if ( api.goto(target) ) { 
+760                 event.preventDefault(); 
+761             } 
+762         }, false); 
+763          
+764         // touch handler to detect taps on the left and right side of the screen 
+765         // based on awesome work of @hakimel: https://github.com/hakimel/reveal.js 
+766         document.addEventListener("touchstart", function ( event ) { 
+767             if (event.touches.length === 1) { 
+768                 var x = event.touches[0].clientX, 
+769                     width = window.innerWidth * 0.3, 
+770                     result = null; 
+771                      
+772                 if ( x < width ) { 
+773                     result = api.prev(); 
+774                 } else if ( x > window.innerWidth - width ) { 
+775                     result = api.next(); 
+776                 } 
+777                  
+778                 if (result) { 
+779                     event.preventDefault(); 
+780                 } 
+781             } 
+782         }, false); 
+783          
+784         // rescale presentation when window is resized 
+785         window.addEventListener("resize", throttle(function () { 
+786             // force going to active step again, to trigger rescaling 
+787             api.goto( document.querySelector(".step.active"), 500 ); 
+788         }, 250), false); 
+789          
+790     }, false); 
+791          
+792 })(document, window); 
+793 
+ 
+794 // THAT'S ALL FOLKS! 
+795 // 
+796 // Thanks for reading it all. 
+797 // Or thanks for scrolling down and reading the last part. 
+798 // 
+799 // I've learnt a lot when building impress.js and I hope this code and comments 
+800 // will help somebody learn at least some part of it. 
