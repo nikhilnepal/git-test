@@ -1,0 +1,820 @@
+/* 
+2     So you like the style of impress.js demo? 
+3     Or maybe you are just curious how it was done? 
+4  
+5     You couldn't find a better place to find out! 
+6  
+7     Welcome to the stylesheet impress.js demo presentation. 
+8  
+9     Please remember that it is not meant to be a part of impress.js and is 
+10     not required by impress.js. 
+11     I expect that anyone creating a presentation for impress.js would create 
+12     their own set of styles. 
+13  
+14     But feel free to read through it and learn how to get the most of what 
+15     impress.js provides. 
+16  
+17     And let me be your guide. 
+18  
+19     Shall we begin? 
+20 */ 
+21 
+ 
+22 
+ 
+23 /* 
+24     We start with a good ol' reset. 
+25     That's the one by Eric Meyer http://meyerweb.com/eric/tools/css/reset/ 
+26  
+27     You can probably argue if it is needed here, or not, but for sure it 
+28     doesn't do any harm and gives us a fresh start. 
+29 */ 
+30 
+ 
+31 html, body, div, span, applet, object, iframe, 
+32 h1, h2, h3, h4, h5, h6, p, blockquote, pre, 
+33 a, abbr, acronym, address, big, cite, code, 
+34 del, dfn, em, img, ins, kbd, q, s, samp, 
+35 small, strike, strong, sub, sup, tt, var, 
+36 b, u, i, center, 
+37 dl, dt, dd, ol, ul, li, 
+38 fieldset, form, label, legend, 
+39 table, caption, tbody, tfoot, thead, tr, th, td, 
+40 article, aside, canvas, details, embed, 
+41 figure, figcaption, footer, header, hgroup, 
+42 menu, nav, output, ruby, section, summary, 
+43 time, mark, audio, video { 
+44     margin: 0; 
+45     padding: 0; 
+46     border: 0; 
+47     font-size: 100%; 
+48     font: inherit; 
+49     vertical-align: baseline; 
+50 } 
+51 
+ 
+52 /* HTML5 display-role reset for older browsers */ 
+53 article, aside, details, figcaption, figure, 
+54 footer, header, hgroup, menu, nav, section { 
+55     display: block; 
+56 } 
+57 body { 
+58     line-height: 1; 
+59 } 
+60 ol, ul { 
+61     list-style: none; 
+62 } 
+63 blockquote, q { 
+64     quotes: none; 
+65 } 
+66 blockquote:before, blockquote:after, 
+67 q:before, q:after { 
+68     content: ''; 
+69     content: none; 
+70 } 
+71 
+ 
+72 table { 
+73     border-collapse: collapse; 
+74     border-spacing: 0; 
+75 } 
+76 
+ 
+77 /* 
+78     Now here is when interesting things start to appear. 
+79  
+80     We set up <body> styles with default font and nice gradient in the background. 
+81     And yes, there is a lot of repetition there because of -prefixes but we don't 
+82     want to leave anybody behind. 
+83 */ 
+84 body { 
+85     font-family: 'PT Sans', sans-serif; 
+86     min-height: 740px; 
+87 
+ 
+88     background: rgb(215, 215, 215); 
+89     background: -webkit-gradient(radial, 50% 50%, 0, 50% 50%, 500, from(rgb(240, 240, 240)), to(rgb(190, 190, 190))); 
+90     background: -webkit-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190)); 
+91     background:    -moz-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190)); 
+92     background:     -ms-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190)); 
+93     background:      -o-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190)); 
+94     background:         radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190)); 
+95 } 
+96 
+ 
+97 /* 
+98     Now let's bring some text styles back ... 
+99 */ 
+100 b, strong { font-weight: bold } 
+101 i, em { font-style: italic } 
+102 
+ 
+103 /* 
+104     ... and give links a nice look. 
+105 */ 
+106 a { 
+107     color: inherit; 
+108     text-decoration: none; 
+109     padding: 0 0.1em; 
+110     background: rgba(255,255,255,0.5); 
+111     text-shadow: -1px -1px 2px rgba(100,100,100,0.9); 
+112     border-radius: 0.2em; 
+113 
+ 
+114     -webkit-transition: 0.5s; 
+115     -moz-transition:    0.5s; 
+116     -ms-transition:     0.5s; 
+117     -o-transition:      0.5s; 
+118     transition:         0.5s; 
+119 } 
+120 
+ 
+121 a:hover, 
+122 a:focus { 
+123     background: rgba(255,255,255,1); 
+124     text-shadow: -1px -1px 2px rgba(100,100,100,0.5); 
+125 } 
+126 
+ 
+127 /* 
+128     Because the main point behind the impress.js demo is to demo impress.js 
+129     we display a fallback message for users with browsers that don't support 
+130     all the features required by it. 
+131  
+132     All of the content will be still fully accessible for them, but I want 
+133     them to know that they are missing something - that's what the demo is 
+134     about, isn't it? 
+135  
+136     And then we hide the message, when support is detected in the browser. 
+137 */ 
+138 
+ 
+139 .fallback-message { 
+140     font-family: sans-serif; 
+141     line-height: 1.3; 
+142 
+ 
+143     width: 780px; 
+144     padding: 10px 10px 0; 
+145     margin: 20px auto; 
+146 
+ 
+147     border: 1px solid #E4C652; 
+148     border-radius: 10px; 
+149     background: #EEDC94; 
+150 } 
+151 
+ 
+152 .fallback-message p { 
+153     margin-bottom: 10px; 
+154 } 
+155 
+ 
+156 .impress-supported .fallback-message { 
+157     display: none; 
+158 } 
+159 
+ 
+160 /* 
+161     Now let's style the presentation steps. 
+162  
+163     We start with basics to make sure it displays correctly in everywhere ... 
+164 */ 
+165 
+ 
+166 .step { 
+167     position: relative; 
+168     width: 900px; 
+169     padding: 40px; 
+170     margin: 20px auto; 
+171 
+ 
+172     -webkit-box-sizing: border-box; 
+173     -moz-box-sizing:    border-box; 
+174     -ms-box-sizing:     border-box; 
+175     -o-box-sizing:      border-box; 
+176     box-sizing:         border-box; 
+177 
+ 
+178     font-family: 'PT Serif', georgia, serif; 
+179     font-size: 48px; 
+180     line-height: 1.5; 
+181 } 
+182 
+ 
+183 /* 
+184     ... and we enhance the styles for impress.js. 
+185  
+186     Basically we remove the margin and make inactive steps a little bit transparent. 
+187 */ 
+188 .impress-enabled .step { 
+189     margin: 0; 
+190     opacity: 0.3; 
+191 
+ 
+192     -webkit-transition: opacity 1s; 
+193     -moz-transition:    opacity 1s; 
+194     -ms-transition:     opacity 1s; 
+195     -o-transition:      opacity 1s; 
+196     transition:         opacity 1s; 
+197 } 
+198 
+ 
+199 .impress-enabled .step.active { opacity: 1 } 
+200 
+ 
+201 /* 
+202     These 'slide' step styles were heavily inspired by HTML5 Slides: 
+203     http://html5slides.googlecode.com/svn/trunk/styles.css 
+204  
+205     ;) 
+206  
+207     They cover everything what you see on first three steps of the demo. 
+208 */ 
+209 .slide { 
+210     display: block; 
+211 
+ 
+212     width: 900px; 
+213     height: 700px; 
+214     padding: 40px 60px; 
+215 
+ 
+216     background-color: white; 
+217     border: 1px solid rgba(0, 0, 0, .3); 
+218     border-radius: 10px; 
+219     box-shadow: 0 2px 6px rgba(0, 0, 0, .1); 
+220 
+ 
+221     color: rgb(102, 102, 102); 
+222     text-shadow: 0 2px 2px rgba(0, 0, 0, .1); 
+223 
+ 
+224     font-family: 'Open Sans', Arial, sans-serif; 
+225     font-size: 30px; 
+226     line-height: 36px; 
+227     letter-spacing: -1px; 
+228 } 
+229 
+ 
+230 .slide q { 
+231     display: block; 
+232     font-size: 50px; 
+233     line-height: 72px; 
+234 
+ 
+235     margin-top: 100px; 
+236 } 
+237 
+ 
+238 .slide q strong { 
+239     white-space: nowrap; 
+240 } 
+241 
+ 
+242 /* 
+243     And now we start to style each step separately. 
+244  
+245     I agree that this may be not the most efficient, object-oriented and 
+246     scalable way of styling, but most of steps have quite a custom look 
+247     and typography tricks here and there, so they had to be styled separately. 
+248  
+249     First is the title step with a big <h1> (no room for padding) and some 
+250     3D positioning along Z axis. 
+251 */ 
+252 
+ 
+253 #title { 
+254     padding: 0; 
+255 } 
+256 
+ 
+257 #title .try { 
+258     font-size: 64px; 
+259     position: absolute; 
+260     top: -0.5em; 
+261     left: 1.5em; 
+262 
+ 
+263     -webkit-transform: translateZ(20px); 
+264     -moz-transform:    translateZ(20px); 
+265     -ms-transform:     translateZ(20px); 
+266     -o-transform:      translateZ(20px); 
+267     transform:         translateZ(20px); 
+268 } 
+269 
+ 
+270 #title h1 { 
+271     font-size: 130px; 
+272 
+ 
+273     -webkit-transform: translateZ(50px); 
+274     -moz-transform:    translateZ(50px); 
+275     -ms-transform:     translateZ(50px); 
+276     -o-transform:      translateZ(50px); 
+277     transform:         translateZ(50px); 
+278 } 
+279 
+ 
+280 #title .footnote { 
+281     font-size: 32px; 
+282 } 
+283 
+ 
+284 /* 
+285     Second step is nothing special, just a text with a link, so it doesn't need 
+286     any special styling. 
+287  
+288     Let's move to 'big thoughts' with centered text and custom font sizes. 
+289 */ 
+290 #big { 
+291     width: 600px; 
+292     text-align: center; 
+293     font-size: 60px; 
+294     line-height: 1; 
+295 } 
+296 
+ 
+297 #big b { 
+298     display: block; 
+299     font-size: 250px; 
+300     line-height: 250px; 
+301 } 
+302 
+ 
+303 #big .thoughts { 
+304     font-size: 90px; 
+305     line-height: 150px; 
+306 } 
+307 
+ 
+308 #big1 { 
+309     width: 600px; 
+310     text-align: center; 
+311     font-size: 60px; 
+312     line-height: 1; 
+313 } 
+314 
+ 
+315 #big1 b { 
+316     display: block; 
+317     font-size: 250px; 
+318     line-height: 250px; 
+319 } 
+320 
+ 
+321 #big1 .thoughts { 
+322     font-size: 90px; 
+323     line-height: 150px; 
+324 } 
+325 
+ 
+326 /* 
+327     'Tiny ideas' just need some tiny styling. 
+328 */ 
+329 #tiny { 
+330     width: 500px; 
+331     text-align: center; 
+332 } 
+333 
+ 
+334 /* 
+335     This step has some animated text ... 
+336 */ 
+337 #ing { width: 500px } 
+338 
+ 
+339 /* 
+340     ... so we define display to `inline-block` to enable transforms and 
+341     transition duration to 0.5s ... 
+342 */ 
+343 #ing b { 
+344     display: inline-block; 
+345     -webkit-transition: 0.5s; 
+346     -moz-transition:    0.5s; 
+347     -ms-transition:     0.5s; 
+348     -o-transition:      0.5s; 
+349     transition:         0.5s; 
+350 } 
+351 
+ 
+352 /* 
+353     ... and we want 'positioning` word to move up a bit when the step gets 
+354     `present` class ... 
+355 */ 
+356 #ing.present .positioning { 
+357     -webkit-transform: translateY(-10px); 
+358     -moz-transform:    translateY(-10px); 
+359     -ms-transform:     translateY(-10px); 
+360     -o-transform:      translateY(-10px); 
+361     transform:         translateY(-10px); 
+362 } 
+363 
+ 
+364 /* 
+365     ... 'rotating' to rotate a quarter of a second later ... 
+366 */ 
+367 #ing.present .rotating { 
+368     -webkit-transform: rotate(-10deg); 
+369     -moz-transform:    rotate(-10deg); 
+370     -ms-transform:     rotate(-10deg); 
+371     -o-transform:      rotate(-10deg); 
+372     transform:         rotate(-10deg); 
+373 
+ 
+374     -webkit-transition-delay: 0.25s; 
+375     -moz-transition-delay:    0.25s; 
+376     -ms-transition-delay:     0.25s; 
+377     -o-transition-delay:      0.25s; 
+378     transition-delay:         0.25s; 
+379 } 
+380 
+ 
+381 /* 
+382     ... and 'scaling' to scale down after another quarter of a second. 
+383 */ 
+384 #ing.present .scaling { 
+385     -webkit-transform: scale(0.7); 
+386     -moz-transform:    scale(0.7); 
+387     -ms-transform:     scale(0.7); 
+388     -o-transform:      scale(0.7); 
+389     transform:         scale(0.7); 
+390 
+ 
+391     -webkit-transition-delay: 0.5s; 
+392     -moz-transition-delay:    0.5s; 
+393     -ms-transition-delay:     0.5s; 
+394     -o-transition-delay:      0.5s; 
+395     transition-delay:         0.5s; 
+396 } 
+397 
+ 
+398 /* 
+399     The 'imagination' step is again some boring font-sizing. 
+400 */ 
+401 
+ 
+402 #imagination { 
+403     width: 600px; 
+404 } 
+405 
+ 
+406 #imagination .imagination { 
+407     font-size: 78px; 
+408 } 
+409 
+ 
+410 /* 
+411     There is nothing really special about 'use the source, Luke' step, too, 
+412     except maybe of the Yoda background. 
+413  
+414     As you can see below I've 'hard-coded' it in data URL. 
+415     That's not the best way to serve images, but because that's just this one 
+416     I decided it will be OK to have it this way. 
+417  
+418     Just make sure you don't blindly copy this approach. 
+419 */ 
+420 #source { 
+421     width: 700px; 
+422     padding-bottom: 300px; 
+423 
+ 
+424     /* Yoda Icon :: Pixel Art from Star Wars http://www.pixeljoint.com/pixelart/1423.htm */ 
+425     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARgAAAEYCAMAAACwUBm+AAAAAXNSR0IArs4c6QAAAKtQTFRFsAAAvbWSLUUrLEQqY1s8UYJMqJ1vNTEgOiIdIzYhjIFVLhsXZ6lgSEIsP2U8JhcCVzMsSXZEgXdOO145XJdWOl03LzAYMk4vSXNExr+hwcuxRTs1Qmk+RW9Am49eFRANQz4pUoNMQWc+OSMDTz0wLBsCNVMxa2NBOyUDUoNNSnlEWo9VRGxAVzYFl6tXCggHbLNmMUIcHhwTXkk5f3VNRT8wUT8xAAAACQocRBWFFwAAAAF0Uk5TAEDm2GYAAAPCSURBVHja7d3JctNAFIZRMwRCCGEmzPM8z/D+T8bu/ptbXXJFdij5fMt2Wuo+2UgqxVmtttq5WVotLzBgwIABAwYMGDCn0qVqbo69psPqVpWx+1XG5iaavF8wYMCAAQMGDBgwi4DJ6Y6qkxB1HNlcN3a92gbR5P2CAQMGDBgwYMCAWSxMlrU+UY5yu2l9okfV4bAxUVbf7TJnAwMGDBgwYMCAAbMLMHeqbGR82Zy+VR1Ht81nVca6R+UdTLaU24Ruzd3qM/e4yjnAgAEDBgwYMGDA7AJMd1l/3NRdVGcj3eX/2WEhCmDGxnM7yqygu8XIPjJj8iN/MGDAgAEDBgwYMAuDGb8q0RGlLCHLv1t9qDKWn3vdNHVuEI6HPaxO9Jo3GDBgwIABAwYMmIXBdC9ShGgMk+XnkXUeuGcsP/e1+lhNnZsL/G5Vs3OAAQMGDBgwYMCAWSxMR3SzOmraG5atdy9wZKzb+vg16qyqe2FltbnAgAEDBgwYMGDALAxmTJSuN3WA76rnVca6GTnemGN1WoEBAwYMGDBgwIBZGMxUomy4+xO899V4LAg5Xnc2MGDAgAEDBgwYMGA218Wq+2K1LDqvY9xZu8zN8fICdM6btYABAwYMGDBgwIABMzfH0+pGU5afze2tXebmeAfVz+p8BQYMGDBgwIABAwbMPBzZ+oWmfJrln1273FhkbHzee9WWbw7AgAEDBgwYMGDALAKm43hcdctKgblcPamOhuXnXlY5Xs6bsW4FGyQCAwYMGDBgwIABswiYMceZKgvMo+h8mrHLTdn676rj+FEFoTtHd8MwOxEYMGDAgAEDBgyYRcBM5UhXqiymW3R3c9ARhWO/OmjqfjVZy+xEYMCAAQMGDBgwYBYG073OnCV0RFNhMhaOa9WfKmOB6XjHMN1tQmaAAQMGDBgwYMCA2VWY7vXjz1U4croAzgPztwIDBgwYMGDAgAEDZhswh035NBw59Dww3RgYMGDAgAEDBgwYMJuD6f4tXT7NUqfCdBvZLkxXdgQGDBgwYMCAAQNmt2DGj8WzwAfV/w7T/aq7mxwwYMCAAQMGDBgwuwqTOo7uTwTngflSzQ3TdaJvAwEDBgwYMGDAgAED5gSvgbyo5oHZ4Pc+gwEDBgwYMGDAgAEzhOm+5G0qTGaAAQMGDBgwYMCAAXNaMOcnls3tNwWm+zRzp54NDBgwYMCAAQMGDJh5YNL36k1TLuGvVq+qnKMbS5n7tulT9asCAwYMGDBgwIABA2ZumKuztLnjgQEDBgwYMGDAgNl5mH/4/ltKA6vBNAAAAABJRU5ErkJggg==); 
+426     background-position: bottom right; 
+427     background-repeat: no-repeat; 
+428 } 
+429 
+ 
+430 #source q { 
+431     font-size: 60px; 
+432 } 
+433 
+ 
+434 /* 
+435     And the "it's in 3D" step again brings some 3D typography - just for fun. 
+436  
+437     Because we want to position <span> elements in 3D we set transform-style to 
+438     `preserve-3d` on the paragraph. 
+439     It is not needed by webkit browsers, but it is in Firefox. It's hard to say 
+440     which behaviour is correct as 3D transforms spec is not very clear about it. 
+441 */ 
+442 #its-in-3d p { 
+443     -webkit-transform-style: preserve-3d; 
+444     -moz-transform-style:    preserve-3d; /* Y U need this Firefox?! */ 
+445     -ms-transform-style:     preserve-3d; 
+446     -o-transform-style:      preserve-3d; 
+447     transform-style:         preserve-3d; 
+448 } 
+449 
+ 
+450 /* 
+451     Below we position each word separately along Z axis and we want it to transition 
+452     to default position in 0.5s when the step gets `present` class. 
+453  
+454     Quite a simple idea, but lot's of styles and prefixes. 
+455 */ 
+456 #its-in-3d span, 
+457 #its-in-3d b { 
+458     display: inline-block; 
+459     -webkit-transform: translateZ(40px); 
+460     -moz-transform:    translateZ(40px); 
+461     -ms-transform:     translateZ(40px); 
+462     -o-transform:      translateZ(40px); 
+463      transform:        translateZ(40px); 
+464 
+ 
+465     -webkit-transition: 0.5s; 
+466     -moz-transition:    0.5s; 
+467     -ms-transition:     0.5s; 
+468     -o-transition:      0.5s; 
+469     transition:         0.5s; 
+470 } 
+471 
+ 
+472 #its-in-3d .have { 
+473     -webkit-transform: translateZ(-40px); 
+474     -moz-transform:    translateZ(-40px); 
+475     -ms-transform:     translateZ(-40px); 
+476     -o-transform:      translateZ(-40px); 
+477     transform:         translateZ(-40px); 
+478 } 
+479 
+ 
+480 #its-in-3d .you { 
+481     -webkit-transform: translateZ(20px); 
+482     -moz-transform:    translateZ(20px); 
+483     -ms-transform:     translateZ(20px); 
+484     -o-transform:      translateZ(20px); 
+485     transform:         translateZ(20px); 
+486 } 
+487 
+ 
+488 #its-in-3d .noticed { 
+489     -webkit-transform: translateZ(-40px); 
+490     -moz-transform:    translateZ(-40px); 
+491     -ms-transform:     translateZ(-40px); 
+492     -o-transform:      translateZ(-40px); 
+493     transform:         translateZ(-40px); 
+494 } 
+495 
+ 
+496 #its-in-3d .its { 
+497     -webkit-transform: translateZ(60px); 
+498     -moz-transform:    translateZ(60px); 
+499     -ms-transform:     translateZ(60px); 
+500     -o-transform:      translateZ(60px); 
+501     transform:         translateZ(60px); 
+502 } 
+503 
+ 
+504 #its-in-3d .in { 
+505     -webkit-transform: translateZ(-10px); 
+506     -moz-transform:    translateZ(-10px); 
+507     -ms-transform:     translateZ(-10px); 
+508     -o-transform:      translateZ(-10px); 
+509     transform:         translateZ(-10px); 
+510 } 
+511 
+ 
+512 #its-in-3d .footnote { 
+513     font-size: 32px; 
+514 
+ 
+515     -webkit-transform: translateZ(-10px); 
+516     -moz-transform:    translateZ(-10px); 
+517     -ms-transform:     translateZ(-10px); 
+518     -o-transform:      translateZ(-10px); 
+519     transform:         translateZ(-10px); 
+520 } 
+521 
+ 
+522 #its-in-3d.present span, 
+523 #its-in-3d.present b { 
+524     -webkit-transform: translateZ(0px); 
+525     -moz-transform:    translateZ(0px); 
+526     -ms-transform:     translateZ(0px); 
+527     -o-transform:      translateZ(0px); 
+528     transform:         translateZ(0px); 
+529 } 
+530 
+ 
+531 /* 
+532     The last step is an overview. 
+533     There is no content in it, so we make sure it's not visible because we want 
+534     to be able to click on other steps. 
+535  
+536 */ 
+537 #overview { display: none } 
+538 
+ 
+539 /* 
+540     We also make other steps visible and give them a pointer cursor using the 
+541     `impress-on-` class. 
+542 */ 
+543 .impress-on-overview .step { 
+544     opacity: 1; 
+545     cursor: pointer; 
+546 } 
+547 
+ 
+548 
+ 
+549 /* 
+550     Now, when we have all the steps styled let's give users a hint how to navigate 
+551     around the presentation. 
+552  
+553     The best way to do this would be to use JavaScript, show a delayed hint for a 
+554     first time users, then hide it and store a status in cookie or localStorage... 
+555  
+556     But I wanted to have some CSS fun and avoid additional scripting... 
+557  
+558     Let me explain it first, so maybe the transition magic will be more readable 
+559     when you read the code. 
+560  
+561     First of all I wanted the hint to appear only when user is idle for a while. 
+562     You can't detect the 'idle' state in CSS, but I delayed a appearing of the 
+563     hint by 5s using transition-delay. 
+564  
+565     You also can't detect in CSS if the user is a first-time visitor, so I had to 
+566     make an assumption that I'll only show the hint on the first step. And when 
+567     the step is changed hide the hint, because I can assume that user already 
+568     knows how to navigate. 
+569  
+570     To summarize it - hint is shown when the user is on the first step for longer 
+571     than 5 seconds. 
+572  
+573     The other problem I had was caused by the fact that I wanted the hint to fade 
+574     in and out. It can be easily achieved by transitioning the opacity property. 
+575     But that also meant that the hint was always on the screen, even if totally 
+576     transparent. It covered part of the screen and you couldn't correctly clicked 
+577     through it. 
+578     Unfortunately you cannot transition between display `block` and `none` in pure 
+579     CSS, so I needed a way to not only fade out the hint but also move it out of 
+580     the screen. 
+581  
+582     I solved this problem by positioning the hint below the bottom of the screen 
+583     with CSS transform and moving it up to show it. But I also didn't want this move 
+584     to be visible. I wanted the hint only to fade in and out visually, so I delayed 
+585     the fade in transition, so it starts when the hint is already in its correct 
+586     position on the screen. 
+587  
+588     I know, it sounds complicated ... maybe it would be easier with the code? 
+589 */ 
+590 
+ 
+591 .hint { 
+592     /* 
+593         We hide the hint until presentation is started and from browsers not supporting 
+594         impress.js, as they will have a linear scrollable view ... 
+595     */ 
+596     display: none; 
+597 
+ 
+598     /* 
+599         ... and give it some fixed position and nice styles. 
+600     */ 
+601     position: fixed; 
+602     left: 0; 
+603     right: 0; 
+604     bottom: 200px; 
+605 
+ 
+606     background: rgba(0,0,0,0.5); 
+607     color: #EEE; 
+608     text-align: center; 
+609 
+ 
+610     font-size: 50px; 
+611     padding: 20px; 
+612 
+ 
+613     z-index: 100; 
+614 
+ 
+615     /* 
+616         By default we don't want the hint to be visible, so we make it transparent ... 
+617     */ 
+618     opacity: 0; 
+619 
+ 
+620     /* 
+621         ... and position it below the bottom of the screen (relative to it's fixed position) 
+622     */ 
+623     -webkit-transform: translateY(400px); 
+624     -moz-transform:    translateY(400px); 
+625     -ms-transform:     translateY(400px); 
+626     -o-transform:      translateY(400px); 
+627     transform:         translateY(400px); 
+628 
+ 
+629     /* 
+630         Now let's imagine that the hint is visible and we want to fade it out and move out 
+631         of the screen. 
+632  
+633         So we define the transition on the opacity property with 1s duration and another 
+634         transition on transform property delayed by 1s so it will happen after the fade out 
+635         on opacity finished. 
+636  
+637         This way user will not see the hint moving down. 
+638     */ 
+639     -webkit-transition: opacity 1s, -webkit-transform 0.5s 1s; 
+640     -moz-transition:    opacity 1s,    -moz-transform 0.5s 1s; 
+641     -ms-transition:     opacity 1s,     -ms-transform 0.5s 1s; 
+642     -o-transition:      opacity 1s,      -o-transform 0.5s 1s; 
+643     transition:         opacity 1s,         transform 0.5s 1s; 
+644 } 
+645 
+ 
+646 /* 
+647     Now we 'enable' the hint when presentation is initialized ... 
+648 */ 
+649 .impress-enabled .hint { display: block } 
+650 
+ 
+651 /* 
+652     ... and we will show it when the first step (with id 'bored') is active. 
+653 */ 
+654 .impress-on-bored .hint { 
+655     /* 
+656         We remove the transparency and position the hint in its default fixed 
+657         position. 
+658     */ 
+659     opacity: 1; 
+660 
+ 
+661     -webkit-transform: translateY(0px); 
+662     -moz-transform:    translateY(0px); 
+663     -ms-transform:     translateY(0px); 
+664     -o-transform:      translateY(0px); 
+665     transform:         translateY(0px); 
+666 
+ 
+667     /* 
+668         Now for fade in transition we have the oposite situation from the one 
+669         above. 
+670  
+671         First after 4.5s delay we animate the transform property to move the hint 
+672         into its correct position and after that we fade it in with opacity 
+673         transition. 
+674     */ 
+675     -webkit-transition: opacity 1s 5s, -webkit-transform 0.5s 4.5s; 
+676     -moz-transition:    opacity 1s 5s,    -moz-transform 0.5s 4.5s; 
+677     -ms-transition:     opacity 1s 5s,     -ms-transform 0.5s 4.5s; 
+678     -o-transition:      opacity 1s 5s,      -o-transform 0.5s 4.5s; 
+679     transition:         opacity 1s 5s,         transform 0.5s 4.5s; 
+680 } 
+681 
+ 
+682 /* 
+683     And as the last thing there is a workaround for quite strange bug. 
+684     It happens a lot in Chrome. I don't remember if I've seen it in Firefox. 
+685  
+686     Sometimes the element positioned in 3D (especially when it's moved back 
+687     along Z axis) is not clickable, because it falls 'behind' the <body> 
+688     element. 
+689  
+690     To prevent this, I decided to make <body> non clickable by setting 
+691     pointer-events property to `none` value. 
+692     Value if this property is inherited, so to make everything else clickable 
+693     I bring it back on the #impress element. 
+694  
+695     If you want to know more about `pointer-events` here are some docs: 
+696     https://developer.mozilla.org/en/CSS/pointer-events 
+697  
+698     There is one very important thing to notice about this workaround - it makes 
+699     everything 'unclickable' except what's in #impress element. 
+700  
+701     So use it wisely ... or don't use at all. 
+702 */ 
+703 .impress-enabled          { pointer-events: none } 
+704 .impress-enabled #impress { pointer-events: auto } 
+705 
+ 
+706 /* 
+707     There is one funny thing I just realized. 
+708  
+709     Thanks to this workaround above everything except #impress element is invisible 
+710     for click events. That means that the hint element is also not clickable. 
+711     So basically all of this transforms and delayed transitions trickery was probably 
+712     not needed at all... 
+713  
+714     But it was fun to learn about it, wasn't it? 
+715 */ 
+716 
+ 
+717 /* 
+718     That's all I have for you in this file. 
+719     Thanks for reading. I hope you enjoyed it at least as much as I enjoyed writing it 
+720     for you. 
+721 */ 
+722 
+ 
+723 .cvs { 
+724     width: 533px; 
+725 } 
+726 
+ 
+727 ul li { 
+728     list-style-type: disc; 
+729 } 
